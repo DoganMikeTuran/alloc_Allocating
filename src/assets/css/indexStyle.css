@@ -1,0 +1,56 @@
+.MuiTableCell-root-146 {
+  display: table-cell;
+  padding: 4px 15px 4px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(224, 224, 224, 1);
+  vertical-align: inherit;
+}
+
+.MuiTableCell-root-172 {
+  display: table-cell;
+  padding: 4px 6px 4px 24px;
+  text-align: left;
+  border-bottom: 1px solid rgba(224, 224, 224, 1);
+  vertical-align: inherit;
+}
+
+.MuiTableCell-root-185 {
+  display: table-cell;
+  padding: 4px 0px 4px 24px;
+  text-align: left;
+  border-bottom: 1px solid rgba(224, 224, 224, 1);
+  vertical-align: inherit;
+}
+.panel-header {
+  height: 35px;
+  padding-top: 20px;
+  padding-bottom: 45px;
+  position: relative;
+  background: #2c2c2c;
+  background: -webkit-linear-gradient(290deg, #2c2c2c 0%, #1f1f1f 100%);
+  background: -o-linear-gradient(290deg, #2c2c2c 0%, #1f1f1f 100%);
+  background: linear-gradient(160deg, #549ed4 10%, rgb(2, 14, 22) 100%);
+  background-size: 105%;
+  overflow: hidden;
+}
+
+.dropdown-item:hover {
+  background-color: #ff0000;
+}
+
+.mytable {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.tds,
+.ths {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 2px;
+}
+
+.trs:nth-child(even) {
+  background-color: #dddddd;
+}
