@@ -22,36 +22,57 @@ import apiFacade from "../../auth/apiFacade";
 
 const createOption = label => ({
   label,
-  value: label.toLowerCase().replace(/\W/g, "")
+  value: ""
 });
+const apiFacadeGetDataSkill = async () => {
+  return new Promise((resolve, reject) => {
+    apiFacade
+      .getData(`skill/${localStorage.getItem("decoded")}`)
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
 
-async function createUpdate(newOption, config) {
-  await axios
-    .post(
+const createUpdate = async (newOption, config) => {
+  try {
+    const resultOfPost = await axios.post(
       "https://localhost:5001/api/skill",
       {
         name: newOption.label,
         clientid: parseInt(localStorage.getItem("decoded"))
       },
       config
-    )
+    );
+    console.log("resultOfPost: ", resultOfPost);
 
-    .then(response => {
-      console.log("Hello world post response", response);
-    });
-  await console.log("trin 2");
-  await new Promise((resolve, reject) => setTimeout(resolve, 500));
-  await console.log("den har nu ventet 5 sekunder");
-  let data = await apiFacade.getData("skill/100001").then(data => {
+    let data = await apiFacadeGetDataSkill();
     console.log(data);
     return data;
-  });
-  return data;
-}
+  } catch (e) {
+    console.log(e);
+  }
+};
 
-async function createUpdateSubSkill(newOption, config, newSkillid) {
-  await axios
-    .post(
+const apiFacadeGetDataSubSkill = async newSkillid => {
+  return new Promise((resolve, reject) => {
+    apiFacade
+      .getData(`subskill/${localStorage.getItem("decoded")}/${newSkillid}`)
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const createUpdateSubSkill = async (newOption, config, newSkillid) => {
+  try {
+    const resultOfPost = await axios.post(
       "https://localhost:5001/api/subskill",
       {
         name: newOption.label,
@@ -59,33 +80,16 @@ async function createUpdateSubSkill(newOption, config, newSkillid) {
         skillid: newSkillid
       },
       config
-    )
+    );
+    console.log("resultOfPost: ", resultOfPost);
 
-    .then(response => {
-      console.log("Hello world post response", response);
-    })
-    .catch(error => {
-      console.log(error);
-    });
-  await console.log("trin 2");
-  await new Promise((resolve, reject) => setTimeout(resolve, 500));
-  await console.log("den har nu ventet 5 sekunder");
-
-  let data = await axios
-    .post(
-      "https://localhost:5001/api/subskill/get",
-      {
-        clientid: parseInt(localStorage.getItem("decoded")),
-        skillid: newSkillid
-      },
-      config
-    )
-    .then(response => {
-      return response.data;
-    });
-  await console.log(data);
-  return data;
-}
+    let data = await apiFacadeGetDataSubSkill(newSkillid);
+    console.log(data);
+    return data;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 class CreateSkill extends React.Component {
   constructor(props) {
@@ -104,44 +108,17 @@ class CreateSkill extends React.Component {
   }
 
   componentDidMount() {
-    apiFacade.getData("skill/100001").then(response => {
-      console.log(response);
-      const selectOptions = response.map(item => ({
-        value: item.id,
-        label: item.name
-      }));
-      this.setState({ selectOptions });
-    });
-  }
-  changeHandler = event => {
-    this.setState({ [event.target.name]: event.target.value });
-  };
-
-  submitHandler = e => {
-    e.preventDefault();
-    const config = {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("accessToken") + ""}`
-      }
-    };
-    axios
-      .post(
-        "https://localhost:5001/api/subskill",
-        {
-          name: this.state.name,
-          skillid: this.state.value.value,
-          clientid: parseInt(localStorage.getItem("decoded"))
-        },
-        config
-      )
-
+    apiFacade
+      .getData(`skill/${localStorage.getItem("decoded")}`)
       .then(response => {
-        console.log("Hello world", response);
-      })
-      .catch(error => {
-        console.log(error);
+        console.log(response);
+        const selectOptions = response.map(item => ({
+          value: item.id,
+          label: item.name
+        }));
+        this.setState({ selectOptions });
       });
-  };
+  }
 
   handleChange = (newValue, actionMeta) => {
     console.group("Value Changed");
@@ -155,21 +132,24 @@ class CreateSkill extends React.Component {
         Authorization: `Bearer ${localStorage.getItem("accessToken") + ""}`
       }
     };
+    if (this.state.value2 != "") {
+      this.setState({
+        value2: ""
+      });
+    }
     if (newValue != null) {
-      axios
-        .post(
-          "https://localhost:5001/api/subskill/get",
-          {
-            clientid: parseInt(localStorage.getItem("decoded")),
-            skillid: newValue.value
-          },
-          config
+      apiFacade
+        .getData(
+          `subskill/${localStorage.getItem("decoded")}/${newValue.value}`
         )
+
         .then(response => {
-          const selectOptionsSubSkill = response.data.map(item => ({
+          const selectOptionsSubSkill = response.map(item => ({
             value: item.id,
             label: item.name
           }));
+          console.log(response);
+          console.log(newValue.value);
           console.log(selectOptionsSubSkill);
           this.setState({ selectOptionsSubSkill: selectOptionsSubSkill });
         });
@@ -203,19 +183,28 @@ class CreateSkill extends React.Component {
         Authorization: `Bearer ${localStorage.getItem("accessToken") + ""}`
       }
     };
-    createUpdate(newOption, config).then(resolve => {
-      console.log(resolve);
-      const newselectOptions = resolve.map(item => ({
+    if (this.state.value2 != null) {
+      this.setState({
+        value2: ""
+      });
+    }
+    createUpdate(newOption, config).then(response => {
+      console.log(response);
+      const newselectOptions = response.map(item => ({
         value: item.id,
         label: item.name
       }));
+      console.log(newselectOptions);
+      console.log("Inden loop");
       for (let index = 0; index < newselectOptions.length; index++) {
+        console.log("Inden i loop");
         if (newselectOptions[index].label === newOption.label) {
+          console.log("Inden i IF");
           console.log(newselectOptions[index].value);
           newOption.value = newselectOptions[index].value;
           console.log(newOption);
           console.log(newselectOptions[index].value);
-          console.log("inde i IF");
+
           this.state.selectOptionsSubSkill = [];
           this.setState({
             isLoadingSkill: false,
@@ -244,15 +233,21 @@ class CreateSkill extends React.Component {
       }
     };
     createUpdateSubSkill(newOption, config, this.state.value.value).then(
-      resolve => {
-        const selectOptionsSubSkill = resolve.map(item => ({
+      response => {
+        const selectOptionsSubSkill = response.map(item => ({
           value: item.id,
           label: item.name
         }));
-        this.setState({ selectOptionsSubSkill });
-
+        console.log(response);
+        console.log(newOption);
+        console.log(selectOptionsSubSkill);
+        this.setState({ selectOptionsSubSkill: selectOptionsSubSkill });
+        console.log("før loop");
         for (let index = 0; index < selectOptionsSubSkill.length; index++) {
+          console.log("inde i loop");
+          console.log(selectOptionsSubSkill[index].label);
           if (selectOptionsSubSkill[index].label === newOption.label) {
+            console.log("inde i if");
             console.log(selectOptionsSubSkill[index].value);
             newOption.value = selectOptionsSubSkill[index].value;
             console.log(newOption);
@@ -270,12 +265,12 @@ class CreateSkill extends React.Component {
     console.log(newOption);
   };
   render() {
-    const { isLoadingSkill, isLoadingSubSkill, value } = this.state;
+    const { isLoadingSkill, isLoadingSubSkill, value, value2 } = this.state;
     return (
       <div>
         <Panelheader size="sm" />
         <div className="content">
-          <form onSubmit={this.submitHandler}>
+          <form>
             <Row>
               <Col xs="6">
                 <Card className="card-chart">
@@ -306,33 +301,8 @@ class CreateSkill extends React.Component {
                       onChange={this.handleChange2}
                       onCreateOption={this.handleCreate2}
                       options={this.state.selectOptionsSubSkill}
-                      value={this.state.value2}
+                      value={value2}
                     />
-                  </CardBody>
-                </Card>
-              </Col>
-              <Col xs="6">
-                <Card className="card-chart">
-                  <CardHeader>
-                    <CardTitle>Create SubSkill</CardTitle>
-                  </CardHeader>
-                  <CardBody>
-                    <input
-                      placeholder="Sub-Skill Name"
-                      type="text"
-                      name="name"
-                      value={this.state.name}
-                      onChange={this.changeHandler}
-                    />
-                    <p></p>
-                    <input
-                      placeholder="id"
-                      type="number"
-                      name="id"
-                      value={this.state.id}
-                      onChange={this.changeHandler}
-                    />
-                    <Button>go</Button>
                   </CardBody>
                 </Card>
               </Col>
