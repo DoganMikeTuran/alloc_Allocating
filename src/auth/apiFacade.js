@@ -120,6 +120,28 @@ class ApiFacade {
         .catch(err => reject(err));
     });
   }
+  DeleteData(endpoint) {
+    const headers = {
+      Accept: "application/json",
+      Authorization: "Bearer " + localStorage.getItem("accessToken")
+    };
+
+    return new Promise((resolve, reject) => {
+      fetch("https://localhost:5001/api/" + endpoint, {
+        method: "DELETE",
+        headers: headers
+      })
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          }
+        })
+        .then(data => {
+          return resolve(data);
+        })
+        .catch(err => reject(err));
+    });
+  }
 
   readTokenData = () => {
     const jwtToken = localStorage.getItem("accessToken");
