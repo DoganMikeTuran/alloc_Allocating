@@ -4,12 +4,14 @@ import {
   Col,
   FormGroup,
   Label,
-  Input,
   Button,
   Card,
   CardBody,
   CardHeader,
-  CardTitle
+  CardTitle,
+  InputGroup,
+  InputGroupAddon,
+  Input
 } from "reactstrap";
 import { CreatableSelect } from "@atlaskit/select";
 // react plugin used to create DropdownMenu for selecting items
@@ -77,6 +79,7 @@ const apiFacadeGetDataUserSubSkill = async subskillid => {
     apiFacade
       .getData(`empusers/${subskillid}/${localStorage.getItem("decoded")}`)
       .then(data => {
+        console.log(data);
         resolve(data);
       })
       .catch(error => {
@@ -155,14 +158,78 @@ class CreateSkill extends React.Component {
       data: [],
       props: "",
       teststate: "0",
-      subskillid: 0
+      subskillid: 0,
+      value10: undefined
     };
   }
+  handleChangeInput = event => {
+    let id = event.target.id;
+    let data = [...this.state.data];
+    data[id].proficiency = event.target.value;
+    if (data[id].proficiency.length < 1) {
+      data[id].proficiency = undefined;
+    }
+    if (Number(data[id].proficiency) > 100) {
+      data[id].proficiency = "100";
+    }
+    this.setState({ data: data });
+  };
+  submitHandler1 = userid => e => {
+    e.preventDefault();
+    let data = [...this.state.data];
+    let item;
+
+    data.forEach(x => {
+      console.log(x);
+      if (x.id == userid) {
+        item = x;
+      }
+      console.log(x.id);
+      console.log(item);
+    });
+
+    console.log(item);
+    console.log(userid);
+
+    axios
+      .put(
+        `https://localhost:5001/api/usersubskill/${userid}/${
+          this.state.subskillid
+        }/${localStorage.getItem("decoded")}/${Number(item.proficiency)}`
+      )
+      .then(response => {
+        console.log(response);
+        console.log(this.state.subskillid);
+      });
+  };
   fields = [
     { name: "name", title: "Name" },
     {
       name: "proficiency",
-      title: "Proficiency"
+      title: "Proficiency",
+      getCellValue: row =>
+        row.proficiency == "" && row.subscription == "No"
+          ? ""
+          : this.state.data.map((item, index) => {
+              return item.id == row.id ? (
+                <div>
+                  {console.log(this.state.data)}
+                  <form onSubmit={this.submitHandler1(row.id)}>
+                    <Input
+                      id={index}
+                      type="number"
+                      value={item.proficiency}
+                      placeholder="Proficiency"
+                      onChange={this.handleChangeInput}
+                    />
+
+                    <Button color="info">Edit</Button>
+                  </form>
+                </div>
+              ) : (
+                ""
+              );
+            })
     },
     {
       name: "subscription",
@@ -174,14 +241,25 @@ class CreateSkill extends React.Component {
 
       getCellValue: row =>
         row.subscription == "Yes" ? (
-          <Button id={2} onClick={() => this.Unsubscribe(row.id)}>
+          <Button
+            color="danger"
+            id={2}
+            onClick={() => this.Unsubscribe(row.id)}
+          >
             Unsubscribe
           </Button>
         ) : (
-          <Button onClick={() => this.Subscribe(row.id)}>Subscribe</Button>
+          <Button color="success" onClick={() => this.Subscribe(row.id)}>
+            Subscribe
+          </Button>
         )
     }
   ];
+  UnProficiency = () => {
+    <input type="text" />;
+
+    //e.preventDefault();
+  };
   Unsubscribe = userid => {
     console.log(userid);
     console.log(this.state.subskillid);
@@ -326,6 +404,8 @@ class CreateSkill extends React.Component {
     this.setState({
       data: selectOptionsUserSubSkill
     });
+    console.log(this.state.data);
+    console.log(selectOptionsUserSubSkill);
   };
 
   // ------------------------------- SKILL CREATING ------------------------------------->
@@ -446,52 +526,50 @@ class CreateSkill extends React.Component {
       <div>
         <Panelheader size="sm" />
         <div className="content">
-          <form>
-            <Row>
-              <Col xs="6">
-                <Card className="card-chart">
-                  <CardHeader>
-                    <CardTitle>Select or create skill</CardTitle>
-                  </CardHeader>
-                  <CardBody>
-                    <CreatableSelect
-                      isClearable
-                      isLoading={isLoadingSkill}
-                      onChange={this.handleChange}
-                      onCreateOption={this.handleCreate}
-                      options={this.state.selectOptions}
-                      value={value}
-                    />
-                  </CardBody>
-                </Card>
-              </Col>
-              <Col xs="6">
-                <Card className="card-chart">
-                  <CardHeader>
-                    <CardTitle>Search and create subskill</CardTitle>
-                  </CardHeader>
-                  <CardBody>
-                    <CreatableSelect
-                      isClearable
-                      isLoading={isLoadingSubSkill}
-                      onChange={this.handleChange2}
-                      onCreateOption={this.handleCreate2}
-                      options={this.state.selectOptionsSubSkill}
-                      value={value2}
-                    />
-                  </CardBody>
-                </Card>
-              </Col>
-            </Row>
-            <Row>
-              <Col xs="12">
-                <Card className="card-chart">
-                  <CardHeader></CardHeader>
-                  <CardBody>{this.runTable()}</CardBody>
-                </Card>
-              </Col>
-            </Row>
-          </form>
+          <Row>
+            <Col xs="6">
+              <Card className="card-chart">
+                <CardHeader>
+                  <CardTitle>Select or create skill</CardTitle>
+                </CardHeader>
+                <CardBody>
+                  <CreatableSelect
+                    isClearable
+                    isLoading={isLoadingSkill}
+                    onChange={this.handleChange}
+                    onCreateOption={this.handleCreate}
+                    options={this.state.selectOptions}
+                    value={value}
+                  />
+                </CardBody>
+              </Card>
+            </Col>
+            <Col xs="6">
+              <Card className="card-chart">
+                <CardHeader>
+                  <CardTitle>Search and create subskill</CardTitle>
+                </CardHeader>
+                <CardBody>
+                  <CreatableSelect
+                    isClearable
+                    isLoading={isLoadingSubSkill}
+                    onChange={this.handleChange2}
+                    onCreateOption={this.handleCreate2}
+                    options={this.state.selectOptionsSubSkill}
+                    value={value2}
+                  />
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+          <Row>
+            <Col xs="12">
+              <Card className="card-chart">
+                <CardHeader></CardHeader>
+                <CardBody>{this.runTable()}</CardBody>
+              </Card>
+            </Col>
+          </Row>
         </div>
       </div>
     );

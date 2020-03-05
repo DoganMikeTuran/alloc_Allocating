@@ -41,8 +41,6 @@ class MyTable extends Component {
   }
 
   render() {
-    console.log(this.props);
-
     const tableColumnExtensions = [
       { columnName: "name" },
       {
